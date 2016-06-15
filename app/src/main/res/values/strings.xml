@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="enable">ON</string>
+    <string name="disable">OFF</string>
+    <string name="interval">TimeInterval:</string>
+    <string name="to"> to </string>
 </resources>
