@@ -48,38 +48,41 @@ public class AlarmControl {
             stop_min = list.get(3);
             halfHour = (list.get(4) > 0 ? true:false);
         }
+        Calendar c = Calendar.getInstance();
+        Date cDate = c.getTime();
+        int cur_hourOfDay = c.get(Calendar.HOUR_OF_DAY);
+        int cur_min = c.get(Calendar.MINUTE);
         Log.d("##@@##", " updateAlarm: halfHour=" + halfHour);
-        long nextAlarmMs = getnextHalfHourAroundAlarm(System.currentTimeMillis(), start_hourOfDay*60+start_min, stop_hourOfDay*60+stop_min, halfHour);
-        if (nextAlarmMs > 0){
-            Calendar c = Calendar.getInstance();
-            Date cDate = c.getTime();
+        long nextAlarmDeltaMin = getnextHalfHourAroundDeltaMin(cur_hourOfDay*60+cur_min, start_hourOfDay*60+start_min, stop_hourOfDay*60+stop_min, halfHour);
+        if (nextAlarmDeltaMin > 0){
+            long nowMs = System.currentTimeMillis();
+            long alarmMs = (long)(nowMs/(60*1000))*(60*1000) + nextAlarmDeltaMin*60*1000; //精度到分钟，舍去末尾的sec
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             Calendar n = Calendar.getInstance();
-            n.setTimeInMillis(nextAlarmMs);
+            n.setTimeInMillis(alarmMs);
             Date nDate = n.getTime();
             Log.d("##@@##", "currentTime=" + df.format(cDate) + " NextAlarm=" + df.format(nDate));
 
-            alarmManager.set(AlarmManager.RTC_WAKEUP,nextAlarmMs,operation);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, alarmMs, operation);
         }
     }
-    //currentTimeMs: 系统UTC基准的当前时间， ms
+    //currentTimeMin: 24小时内的当前时间， min
     //start_min：24小时内的闹钟起点时间，min
     //stop_min: 24小时内的闹钟结束时间，min
     //halfHour: 是否以30min作为step，否则60min
-    //return: 接下来半点（整点）闹钟时间，UTC基准，ms
-    private static long getnextHalfHourAroundAlarm(long currentTimeMs, int start_min, int stop_min, boolean halfHour){
+    //return: 接下来半点（整点）闹钟距当前时间差,24小时内，min
+    private static long getnextHalfHourAroundDeltaMin(long currentTimeMin, int start_min, int stop_min, boolean halfHour){
         long stepMin = halfHour ? 30:60;
-        long currentTimeMin = currentTimeMs/(1000*60);
         long count = 24*60 / stepMin;
         for (int i = 1; i <= count; i++) {
             long nextTimeInMin = currentTimeMin + i * stepMin;
             long nextTimeHalfHourRoundMin = ((long)(nextTimeInMin / stepMin)) * stepMin;
             //把闹钟时间归一化到一天时间范围内
             long nextTimeToCheck_normalized_min = (nextTimeHalfHourRoundMin % (24*60));
-            Log.d("##@@##", "currentms = " + currentTimeMs+ " currentTimeMin = " + currentTimeMin + " nextTimeInMin=" + nextTimeInMin + " nextTimeHalfHourRoundMin=" + nextTimeHalfHourRoundMin + " round_normalized_min = " + nextTimeToCheck_normalized_min);
+            Log.d("##@@##", " currentTimeMin = " + currentTimeMin + " nextTimeInMin=" + nextTimeInMin + " nextTimeHalfHourRoundMin=" + nextTimeHalfHourRoundMin + " round_normalized_min = " + nextTimeToCheck_normalized_min);
             if (isInRange(start_min, stop_min, nextTimeToCheck_normalized_min))
-                return nextTimeHalfHourRoundMin*60*1000;
+                return nextTimeHalfHourRoundMin - currentTimeMin;
         }
         return -1;
     }

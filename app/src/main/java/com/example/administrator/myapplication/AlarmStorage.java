@@ -12,14 +12,6 @@ import java.util.Map;
  * Created by Administrator on 2016/6/15.
  */
 public class AlarmStorage {
-
-    /*
-    private Context mContext = null;
-    public AlarmStorage(Context context){
-        mContext = context;
-    }
-    */
-
     static private final String KEY_STATE="key_onoff";
     static private final String KEY_START_HOUR="key_start_hour";
     static private final String KEY_START_MIN="key_start_min";

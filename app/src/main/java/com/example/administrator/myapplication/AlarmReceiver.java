@@ -15,7 +15,9 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class AlarmReceiver extends BroadcastReceiver{
 
@@ -27,36 +29,33 @@ public class AlarmReceiver extends BroadcastReceiver{
     public void onReceive(Context arg0, Intent arg1) {
         mContext = arg0;
         //此处可以添加闹钟铃声
-        System.out.println("我是闹钟，我要叫醒你...");
-        Toast.makeText(arg0, "我是闹钟，我要叫醒你...", Toast.LENGTH_SHORT).show();
+//        System.out.println("我是闹钟，我要叫醒你...");
+//        Toast.makeText(arg0, "我是闹钟，我要叫醒你...", Toast.LENGTH_SHORT).show();
 
-        sound();
+        boolean halfHour;
+        Calendar c = Calendar.getInstance();
+        Date cDate = c.getTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println("Alarm triggered @ " + df.format(cDate));
+        Toast.makeText(arg0, df.format(cDate), Toast.LENGTH_SHORT).show();
+
+        int min = c.get(Calendar.MINUTE);
+        if (min<5 || min>55)
+            halfHour = false;
+        else
+            halfHour = true;
+        sound(halfHour);
         reInstallAlarm();
     }
 
     private void reInstallAlarm(){
         AlarmControl.cancelAlarm(mContext);
         AlarmControl.updateAlarm(mContext);
-        /*
-        // 获取AlarmManager对象
-        alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-
-        // 创建Intent对象，action为android.intent.action.ALARM_RECEIVER
-        Intent intent = new Intent("android.intent.action.ALARM_RECEIVER");
-        operation = PendingIntent.getBroadcast(mContext, 0, intent, 0);
-        alarmManager.cancel(operation);
-        Calendar c = null;
-        c = Calendar.getInstance();
-        c.setTimeInMillis(System.currentTimeMillis() + 10000);
-        int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
-        Log.d("##@@##", "hour x = " + hourOfDay);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), operation);
-        */
     }
 
     MediaPlayer mMediaPlayer = new MediaPlayer();
 
-    private void sound(){
+    private void sound(final boolean halfHour){
         Log.d("##@@##" , "sound x");
         //获取alarm uri
         Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -73,32 +72,28 @@ public class AlarmReceiver extends BroadcastReceiver{
                 mMediaPlayer.prepare();
                 mMediaPlayer.start();
 
-
                 Thread thread=new Thread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        Log.e("##@@##", "111111111");
-                        // TODO Auto-generated method stub
+                        Log.e("##@@##", "run");
+                        int durationMs = halfHour?1500:3000;
                         Message message=new Message();
                         message.what=1;
-                        mHandler.sendMessageDelayed(message, 2000);
+                        mHandler.sendMessageDelayed(message, durationMs);
                     }
                 });
                 thread.start();
                 Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-                v.vibrate(500);
-
-
-
+                int durationMs = halfHour?1500:3000;
+                v.vibrate(durationMs);
             }
         } catch (Exception e) {
             Log.d("##@@##" , "Exception: "  + e.toString());
         }
         Log.d("##@@##" , "stream play done");
     }
-
 
     public Handler mHandler=new Handler()
     {
