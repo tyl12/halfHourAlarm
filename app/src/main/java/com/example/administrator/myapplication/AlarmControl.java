@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -16,6 +17,7 @@ import java.util.List;
  */
 public class AlarmControl {
 
+    public static final String INTENT_ALARM_RECEIVER = "android.intent.action.ALARM_RECEIVER";
     /*
     private AlarmManager alarmManager;
     private PendingIntent operation;
@@ -23,7 +25,7 @@ public class AlarmControl {
     public static void cancelAlarm(Context context) {
         // 获取AlarmManager对象
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent("android.intent.action.ALARM_RECEIVER");
+        Intent intent = new Intent(INTENT_ALARM_RECEIVER);
         PendingIntent operation = PendingIntent.getBroadcast(context, 0, intent, 0);
         alarmManager.cancel(operation);
     }
@@ -65,6 +67,7 @@ public class AlarmControl {
             Log.d("##@@##", "currentTime=" + df.format(cDate) + " NextAlarm=" + df.format(nDate));
 
             alarmManager.set(AlarmManager.RTC_WAKEUP, alarmMs, operation);
+            Toast.makeText(context, "Next Alarm: " + df.format(nDate), Toast.LENGTH_SHORT).show();
         }
     }
     //currentTimeMin: 24小时内的当前时间， min

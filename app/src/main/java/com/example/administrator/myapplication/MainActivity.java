@@ -2,6 +2,7 @@ package com.example.administrator.myapplication;
 
 import android.app.Activity;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +24,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
     private TextView mIntervalText = null;
     private TextView mToText = null;
     private CheckBox mCheckBtn = null;
+    private Button mTestBtn = null;
 
     private int start_hourOfDay = -1;
     private int start_min = -1;
@@ -51,6 +53,22 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
                     enableBtn(false);
                 }
                 updateAlarm();
+            }
+        });
+        //test btn
+        mTestBtn = (Button)findViewById(R.id.test);
+        mTestBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 创建Intent对象
+                Intent intent = new Intent();
+                // 设置Intent的Action属性
+                intent.setAction("android.intent.action.ALARM_RECEIVER");
+                intent.addCategory("android.intent.category.DEFAULT");
+                intent.putExtra("msg", "测试广播");
+                //发送广播
+                sendBroadcast(intent);
+                Toast.makeText(MainActivity.this, "发送测试广播", Toast.LENGTH_SHORT).show();
             }
         });
         //start/stop btn
@@ -141,6 +159,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
 
     private void enableBtn(boolean enable){
         Log.d("##@@##", "enableBtn  = " + enable);
+        mTestBtn.setEnabled(enable);
         mStartBtn.setEnabled(enable);
         mStopBtn.setEnabled(enable);
         mIntervalText.setEnabled(enable);
