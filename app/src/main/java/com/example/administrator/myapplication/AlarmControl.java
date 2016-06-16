@@ -63,22 +63,25 @@ public class AlarmControl {
             alarmManager.set(AlarmManager.RTC_WAKEUP,nextAlarmMs,operation);
         }
     }
-    private static long getnextHalfHourAroundAlarm(long baseTimeMs, int start_min, int stop_min, boolean halfHour){
-        long roundRange = halfHour ? 30*60*1000 : 60*60*1000;
-        long count = 24*60*60*1000 / roundRange;
-        for (int i = 0; i < count; i++) {
-            long nextTimeToCheckInMs = getNextHalfHourAroundInMs(baseTimeMs + i * roundRange, halfHour);
+    //currentTimeMs: 系统UTC基准的当前时间， ms
+    //start_min：24小时内的闹钟起点时间，min
+    //stop_min: 24小时内的闹钟结束时间，min
+    //halfHour: 是否以30min作为step，否则60min
+    //return: 接下来半点（整点）闹钟时间，UTC基准，ms
+    private static long getnextHalfHourAroundAlarm(long currentTimeMs, int start_min, int stop_min, boolean halfHour){
+        long stepMin = halfHour ? 30:60;
+        long currentTimeMin = currentTimeMs/(1000*60);
+        long count = 24*60 / stepMin;
+        for (int i = 1; i <= count; i++) {
+            long nextTimeInMin = currentTimeMin + i * stepMin;
+            long nextTimeHalfHourRoundMin = ((long)(nextTimeInMin / stepMin)) * stepMin;
             //把闹钟时间归一化到一天时间范围内
-            long nextTimeToCheck_normalized_min = ((long)(nextTimeToCheckInMs / (60*1000) )) % (24*60);
+            long nextTimeToCheck_normalized_min = (nextTimeHalfHourRoundMin % (24*60));
+            Log.d("##@@##", "currentms = " + currentTimeMs+ " currentTimeMin = " + currentTimeMin + " nextTimeInMin=" + nextTimeInMin + " nextTimeHalfHourRoundMin=" + nextTimeHalfHourRoundMin + " round_normalized_min = " + nextTimeToCheck_normalized_min);
             if (isInRange(start_min, stop_min, nextTimeToCheck_normalized_min))
-                return nextTimeToCheckInMs;
+                return nextTimeHalfHourRoundMin*60*1000;
         }
         return -1;
-    }
-    private static long getNextHalfHourAroundInMs(long baseTimeMs, boolean halfHour){
-        long roundRange = halfHour ? 30*60*1000 : 60*60*1000;
-        long nextMs = ((long)(baseTimeMs + roundRange)/roundRange) * roundRange;
-        return nextMs;
     }
     private static boolean isInRange(long start_min, long stop_min, long target_min){ //input: hour*60+min
         //boolean flip = (start_hourOfDay * 60 + start_min > stop_hourOfDay * 60 + stop_min) ? true : false;
