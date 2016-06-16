@@ -1,25 +1,7 @@
 package com.example.administrator.myapplication;
 
-/*
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
-}
-*/
-
-
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,14 +13,10 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-import android.app.TimePickerDialog;
-
-import java.util.Calendar;
 import java.util.List;
 
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends Activity/*implements OnClickListener*/{
 
-    private Calendar c = null;
     private ToggleButton mToggleBtn = null;
     private Button mStartBtn = null;
     private Button mStopBtn = null;
@@ -55,11 +33,6 @@ public class MainActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         Log.d("##@@##", "onCreate E");
         setContentView(R.layout.activity_main);
-
-        // 初始化按钮，并绑定监听事件
-        findViewById(R.id.clock).setOnClickListener(this);
-        findViewById(R.id.repeating_clock).setOnClickListener(this);
-        findViewById(R.id.cancel_clock).setOnClickListener(this);
 
         //checkbtn
         mToggleBtn = (ToggleButton)findViewById(R.id.tglSound);
@@ -166,15 +139,6 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
-    /*
-    private void cancelAlarm(){
-        // 获取AlarmManager对象
-        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        // 创建Intent对象，action为android.intent.action.ALARM_RECEIVER
-        Intent intent = new Intent("android.intent.action.ALARM_RECEIVER");
-        operation = PendingIntent.getBroadcast(this, 0, intent, 0);
-        alarmManager.cancel(operation);
-    }*/
     private void enableBtn(boolean enable){
         Log.d("##@@##", "enableBtn  = " + enable);
         mStartBtn.setEnabled(enable);
@@ -197,10 +161,8 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
-    @Override
-    public void onClick(View v) {
-    }
-
+//    @Override
+//    public void onClick(View v) {
 //        switch (v.getId()) {
 //            case R.id.clock:// 设置一次性闹钟
 //                alarmManager.cancel(operation);

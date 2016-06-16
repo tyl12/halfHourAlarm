@@ -21,8 +21,8 @@ import java.util.Date;
 
 public class AlarmReceiver extends BroadcastReceiver{
 
-    private AlarmManager alarmManager;
-    private PendingIntent operation;
+//    private AlarmManager alarmManager;
+//    private PendingIntent operation;
     private Context mContext;
 
     @Override
