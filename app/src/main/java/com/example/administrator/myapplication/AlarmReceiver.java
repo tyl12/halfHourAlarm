@@ -27,6 +27,7 @@ public class AlarmReceiver extends BroadcastReceiver{
 //    private PendingIntent operation;
     private Context mContext;
 
+
     @Override
     public void onReceive(Context arg0, Intent intent) {
         mContext = arg0;
@@ -36,12 +37,17 @@ public class AlarmReceiver extends BroadcastReceiver{
 
         String action = intent.getAction();
         if (AlarmControl.INTENT_ALARM_RECEIVER.equals(action)) {
+            Log.d("##@@##" , "INTENT_ALARM_RECEIVER received");
             handleAlarmIntent();
         }
         else if (Intent.ACTION_TIMEZONE_CHANGED.equals(action) ||
                 Intent.ACTION_TIME_CHANGED.equals(action) ||
                 Intent.ACTION_DATE_CHANGED.equals(action)){
             Log.d("##@@##" , "system time changed, ajust next alarm");
+            reInstallAlarm();
+        }
+        else if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+            Log.d("##@@##" , "ACTION_BOOT_COMPLETED received");
             reInstallAlarm();
         }
     }
@@ -106,8 +112,10 @@ public class AlarmReceiver extends BroadcastReceiver{
                 });
                 thread.start();
                 Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-                int durationMs = halfHour?500:1000;
-                v.vibrate(durationMs);
+                if (halfHour)
+                    v.vibrate(new long[] {0,200,0}, -1);
+                else
+                    v.vibrate(new long[] {0,200,1000,200,1000,200}, -1);
             }
         } catch (Exception e) {
             Log.d("##@@##" , "Exception: "  + e.toString());
