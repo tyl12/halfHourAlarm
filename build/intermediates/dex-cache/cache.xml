@@ -12,7 +12,7 @@
         jar="D:\work\MyApplication_alm\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
         jumboMode="true"
         revision="23.0.3"
-        sha1="bae960f1fef138d6590e8dcf834cb6d788e6824a">
+        sha1="a98556588308e93f738cd2766e3383501654cd20">
         <dex dex="D:\work\MyApplication_alm\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_aa6cf6ad7e379c7440cfe989e7f5911772c95fd9\classes.dex" />
     </item>
     <item
@@ -33,7 +33,7 @@
         jar="D:\work\MyApplication_alm\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
         jumboMode="true"
         revision="23.0.3"
-        sha1="ac93f11572880f05772daa1c8041cfb00e2e8c0f">
+        sha1="90f937899d65188df709a936660ab351547763cf">
         <dex dex="D:\work\MyApplication_alm\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_f74bc9c406bcf2ab0e58119b2fb35c51bfd6e818\classes.dex" />
     </item>
     <item

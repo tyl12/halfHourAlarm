@@ -50,7 +50,11 @@ public class AlarmReceiver extends BroadcastReceiver{
         }
         else if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             Log.d("##@@##" , "ACTION_BOOT_COMPLETED received");
-            reInstallAlarm();
+            boolean enabled = AlarmStorage.getState(mContext);
+            if (enabled)
+                reInstallAlarm();
+            else
+                Log.d("##@@##", "onReceived: alarm previously disabled");
         }
     }
 
