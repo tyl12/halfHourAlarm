@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ public class AlarmReceiver extends BroadcastReceiver{
 //    private AlarmManager alarmManager;
 //    private PendingIntent operation;
     private Context mContext;
+    private boolean mIsHalfHour = false;
 
 
     @Override
@@ -61,11 +63,14 @@ public class AlarmReceiver extends BroadcastReceiver{
         Toast.makeText(mContext, df.format(cDate), Toast.LENGTH_SHORT).show();
 
         int min = c.get(Calendar.MINUTE);
-        if (min<5 || min>55)
+        Log.d("##@@##", "handleAlarmIntent: minute = " + min);
+        if (min<15 || min>45)
             halfHour = false;
         else
             halfHour = true;
-        sound(halfHour);
+        sound_vibrate(); //halfHour);
+        mIsHalfHour = halfHour;
+        Log.d("##@@##", "mIsHalfHour = " + mIsHalfHour);
         reInstallAlarm();
     }
 
@@ -74,54 +79,52 @@ public class AlarmReceiver extends BroadcastReceiver{
         AlarmControl.updateAlarm(mContext);
     }
 
-    MediaPlayer mMediaPlayer = new MediaPlayer();
-
-    private void sound(final boolean halfHour){
-        Log.d("##@@##" , "sound x");
+    MediaPlayer mMediaPlayer; //= new MediaPlayer();
+    private int mPlayCnt = 0;
+    private Uri mAlert;
+    private void sound_vibrate() { //final boolean halfHour){
         //获取alarm uri
-        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
+        mAlert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         //InputStream stream = mContext.getResources().openRawResource(R.raw.pixiedust);
         //Uri music = Uri.parse("android.resource://com.example.administrator.myapplication/raw/pixiedust.ogg");
         //File file= new File(video.toString());
-
-        //创建media player
         try {
             mMediaPlayer = new MediaPlayer();
-            mMediaPlayer.setDataSource(mContext, alert);
+            mMediaPlayer.setDataSource(mContext, mAlert);
             //mMediaPlayer.setDataSource(mContext, music);
             final AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
-                Log.d("##@@##" , "stream found");
+                Log.d("##@@##", "stream found");
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 mMediaPlayer.setLooping(false);
-                mMediaPlayer.prepare();
-                mMediaPlayer.start();
+                mPlayCnt = 0;
 
-                Thread thread=new Thread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        Log.e("##@@##", "run");
-                        int durationMs = halfHour?1500:3000;
-                        Message message=new Message();
-                        message.what=1;
-                        mHandler.sendMessageDelayed(message, durationMs);
-                    }
-                });
-                thread.start();
-                Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-                if (halfHour)
-                    v.vibrate(new long[] {0,200,0}, -1);
-                else
-                    v.vibrate(new long[] {0,200,1000,200,1000,200}, -1);
+                //let handler play sound
+                Message message = new Message();
+                message.what = PLAY_SOUND;
+                mHandler.sendMessage(message);
             }
-        } catch (Exception e) {
+        }catch (Exception e) {
             Log.d("##@@##" , "Exception: "  + e.toString());
         }
-        Log.d("##@@##" , "stream play done");
+        //triggerVibrate();
     }
+
+    private static final int PLAY_SOUND = 1;
+    private static final int STOP_SOUND = 2;
+    private static final int SOUND_DURATION = 1000; //ms
+    private static final int SOUND_INTERVAL = 1500; //ms
+
+    /*
+    private void triggerVibrate() {
+        //vibrate
+        Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        if (mIsHalfHour)
+            v.vibrate(new long[] {0,200}, -1);
+        else
+            v.vibrate(new long[] {0,200,1000,200}, -1);
+    }
+    */
 
     public Handler mHandler=new Handler()
     {
@@ -129,8 +132,28 @@ public class AlarmReceiver extends BroadcastReceiver{
         {
             switch(msg.what)
             {
-                case 1:
-                    mMediaPlayer.stop();
+                case PLAY_SOUND:
+                    mPlayCnt++;
+                    Log.d("##@@##", "PLAY_SOUND cnt = " + mPlayCnt);
+                    try {
+                        mMediaPlayer.prepare();
+                        mMediaPlayer.seekTo(0);
+                        mMediaPlayer.start();
+                        Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+                        v.vibrate(new long[] {0,200}, -1);
+                    } catch (Exception e){}
+                    Message msg_stop = new Message();
+                    msg_stop.what = STOP_SOUND;
+                    mHandler.sendMessageDelayed(msg_stop, SOUND_DURATION); // play sound for SOUND_DURATION ms
+                    break;
+                case STOP_SOUND:
+                    mMediaPlayer.stop(); //stop sound
+                    Log.d("##@@##", "STOP_SOUND cnt = " + mPlayCnt);
+                    if (!mIsHalfHour && mPlayCnt < 2) {
+                        Message msg_start = new Message();
+                        msg_start.what = PLAY_SOUND;
+                        mHandler.sendMessageDelayed(msg_start, SOUND_INTERVAL);//pause for SOUND_DURATION ms and play sound for the second time.
+                    }
                     break;
                 default:
                     break;
