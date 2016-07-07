@@ -46,7 +46,11 @@ public class AlarmReceiver extends BroadcastReceiver{
                 Intent.ACTION_TIME_CHANGED.equals(action) ||
                 Intent.ACTION_DATE_CHANGED.equals(action)){
             Log.d("##@@##" , "system time changed, ajust next alarm");
-            reInstallAlarm();
+            boolean enabled = AlarmStorage.getState(mContext);
+            if (enabled)
+                reInstallAlarm();
+            else
+                Log.d("##@@##", "onReceived: alarm previously disabled");
         }
         else if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             Log.d("##@@##" , "ACTION_BOOT_COMPLETED received");
@@ -117,7 +121,7 @@ public class AlarmReceiver extends BroadcastReceiver{
     private static final int PLAY_SOUND = 1;
     private static final int STOP_SOUND = 2;
     private static final int SOUND_DURATION = 1000; //ms
-    private static final int SOUND_INTERVAL = 1500; //ms
+    private static final int SOUND_INTERVAL = 1000; //ms
 
     /*
     private void triggerVibrate() {
@@ -158,6 +162,8 @@ public class AlarmReceiver extends BroadcastReceiver{
                         msg_start.what = PLAY_SOUND;
                         mHandler.sendMessageDelayed(msg_start, SOUND_INTERVAL);//pause for SOUND_DURATION ms and play sound for the second time.
                     }
+                    else
+                        mMediaPlayer.release();
                     break;
                 default:
                     break;
