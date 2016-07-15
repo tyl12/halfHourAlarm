@@ -1,4 +1,4 @@
-package com.example.administrator.myapplication;
+package com.example.administrator.alarm;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -17,12 +17,14 @@ import java.util.List;
  */
 public class AlarmControl {
 
+    public static final String TAG = "AlarmControl";
     public static final String INTENT_ALARM_RECEIVER = "android.intent.action.ALARM_RECEIVER";
     /*
     private AlarmManager alarmManager;
     private PendingIntent operation;
     */
-    public static void cancelAlarm(Context context) {
+    public synchronized static void cancelAlarm(Context context) {
+        AlarmLog.log(TAG, " cancelAlarm");
         // 获取AlarmManager对象
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(INTENT_ALARM_RECEIVER);
@@ -30,9 +32,10 @@ public class AlarmControl {
         alarmManager.cancel(operation);
     }
 
-    public static void updateAlarm(Context context) {
+    public synchronized static void updateAlarm(Context context) {
+        AlarmLog.log(TAG, " updateAlarm");
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent("android.intent.action.ALARM_RECEIVER");
+        Intent intent = new Intent(INTENT_ALARM_RECEIVER);
         PendingIntent operation = PendingIntent.getBroadcast(context, 0, intent, 0);
         /*
         alarmManager.cancel(operation);
@@ -54,7 +57,7 @@ public class AlarmControl {
         Date cDate = c.getTime();
         int cur_hourOfDay = c.get(Calendar.HOUR_OF_DAY);
         int cur_min = c.get(Calendar.MINUTE);
-        Log.d("##@@##", " updateAlarm: halfHour=" + halfHour);
+        Log.d(TAG, " updateAlarm: halfHour=" + halfHour);
         long nextAlarmDeltaMin = getnextHalfHourAroundDeltaMin(cur_hourOfDay*60+cur_min, start_hourOfDay*60+start_min, stop_hourOfDay*60+stop_min, halfHour);
         if (nextAlarmDeltaMin > 0){
             long nowMs = System.currentTimeMillis();
@@ -64,10 +67,14 @@ public class AlarmControl {
             Calendar n = Calendar.getInstance();
             n.setTimeInMillis(alarmMs);
             Date nDate = n.getTime();
-            Log.d("##@@##", "currentTime=" + df.format(cDate) + " NextAlarm=" + df.format(nDate));
+            Log.d(TAG, "currentTime=" + df.format(cDate) + " NextAlarm=" + df.format(nDate));
 
             alarmManager.set(AlarmManager.RTC_WAKEUP, alarmMs, operation);
             Toast.makeText(context, "Next Alarm: " + df.format(nDate), Toast.LENGTH_SHORT).show();
+
+            AlarmLog.log(TAG, " updateAlarm: setting start=" + start_hourOfDay + ":" + start_min + " ; stop=" + stop_hourOfDay +
+                    ":" + stop_min + " ; half=" + halfHour);
+            AlarmLog.log(TAG, " updateAlarm: currentTime=" + df.format(cDate) + " NextAlarm=" + df.format(nDate));
         }
     }
     //currentTimeMin: 24小时内的当前时间， min
@@ -83,7 +90,7 @@ public class AlarmControl {
             long nextTimeHalfHourRoundMin = ((long)(nextTimeInMin / stepMin)) * stepMin;
             //把闹钟时间归一化到一天时间范围内
             long nextTimeToCheck_normalized_min = (nextTimeHalfHourRoundMin % (24*60));
-            Log.d("##@@##", " currentTimeMin = " + currentTimeMin + " nextTimeInMin=" + nextTimeInMin + " nextTimeHalfHourRoundMin=" + nextTimeHalfHourRoundMin + " round_normalized_min = " + nextTimeToCheck_normalized_min);
+            Log.d(TAG, " currentTimeMin = " + currentTimeMin + " nextTimeInMin=" + nextTimeInMin + " nextTimeHalfHourRoundMin=" + nextTimeHalfHourRoundMin + " round_normalized_min = " + nextTimeToCheck_normalized_min);
             if (isInRange(start_min, stop_min, nextTimeToCheck_normalized_min))
                 return nextTimeHalfHourRoundMin - currentTimeMin;
         }
@@ -107,7 +114,7 @@ public class AlarmControl {
                 inRange = false;
             }
         }
-        Log.d("##@@##", "isInRange: start_min=" + start_min + " stop_min=" + stop_min + " target_min=" + target_min + " flip=" + flip +" inRange=" + inRange);
+        Log.d(TAG, "isInRange: start_min=" + start_min + " stop_min=" + stop_min + " target_min=" + target_min + " flip=" + flip +" inRange=" + inRange);
         return inRange;
     }
 

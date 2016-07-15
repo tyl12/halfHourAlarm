@@ -1,4 +1,4 @@
-package com.example.administrator.myapplication;
+package com.example.administrator.alarm;
 
 import android.app.Activity;
 import android.app.TimePickerDialog;
@@ -18,6 +18,7 @@ import java.util.List;
 
 public class MainActivity extends Activity/*implements OnClickListener*/{
 
+    private static final String TAG = "MainActivity";
     private ToggleButton mToggleBtn = null;
     private Button mStartBtn = null;
     private Button mStopBtn = null;
@@ -33,7 +34,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("##@@##", "onCreate E");
+        Log.d(TAG, "onCreate E");
         setContentView(R.layout.activity_main);
 
         //checkbtn
@@ -41,7 +42,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
         mToggleBtn.setOnCheckedChangeListener(new ToggleButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log.d("##@@##", "checkbtn=" + isChecked);
+                Log.d(TAG, "checkbtn=" + isChecked);
                 if (isChecked){
                     recoverAllSetting(); //recover all previous setting when enabled again
                     enableBtn(true);
@@ -60,6 +61,8 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
         mTestBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                AlarmLog.log(TAG, "--> testAlarm");
+
                 // 创建Intent对象
                 Intent intent = new Intent();
                 // 设置Intent的Action属性
@@ -124,7 +127,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("##@@##", "onResume E");
+        Log.d(TAG, "onResume E");
         boolean enabled = AlarmStorage.getState(this);
         if (enabled)
             enableBtn(true);
@@ -137,13 +140,13 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d("##@@##", "onPause E");
+        Log.d(TAG, "onPause E");
         AlarmStorage.saveState(this, mToggleBtn.isEnabled());
         AlarmStorage.saveAllSetting(this, start_hourOfDay, start_min, stop_hourOfDay, stop_min, mCheckBtn.isChecked()?1:0);
     }
 
     private void recoverAllSetting(){
-        Log.d("##@@##", "recoverAllSetting E");
+        Log.d(TAG, "recoverAllSetting E");
         List<Integer> list = AlarmStorage.getAllSetting(this, null);
         if (list != null){
             start_hourOfDay = list.get(0);
@@ -158,7 +161,8 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
     }
 
     private void enableBtn(boolean enable){
-        Log.d("##@@##", "enableBtn  = " + enable);
+        Log.d(TAG, "enableBtn  = " + enable);
+        AlarmLog.log(TAG, "--> enableAlarm: " + enable);
         mTestBtn.setEnabled(enable);
         mStartBtn.setEnabled(enable);
         mStopBtn.setEnabled(enable);
@@ -190,7 +194,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
 //                c.setTimeInMillis(System.currentTimeMillis() + 5000);
 //                int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
 //
-//                Log.d("##@@##", "hour r = " + hourOfDay);
+//                Log.d(TAG, "hour r = " + hourOfDay);
 //
 //                /*
 //                //设置小时分钟，秒和毫秒都设置为0

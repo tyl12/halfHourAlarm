@@ -1,4 +1,4 @@
-package com.example.administrator.myapplication;
+package com.example.administrator.alarm;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

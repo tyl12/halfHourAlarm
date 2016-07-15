@@ -1,26 +1,9 @@
-package com.example.administrator.myapplication;
+package com.example.administrator.alarm;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Vibrator;
-import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 public class AlarmReceiver extends BroadcastReceiver{
 
@@ -28,36 +11,44 @@ public class AlarmReceiver extends BroadcastReceiver{
 //    private PendingIntent operation;
     private Context mContext;
     private boolean mIsHalfHour = false;
-
+    static final String TAG = "AlarmReceiver";
 
     @Override
     public void onReceive(Context arg0, Intent intent) {
         mContext = arg0;
-        //此处可以添加闹钟铃声
-//        System.out.println("我是闹钟，我要叫醒你...");
-//        Toast.makeText(arg0, "我是闹钟，我要叫醒你...", Toast.LENGTH_SHORT).show();
 
         String action = intent.getAction();
+        AlarmLog.log(TAG, "intent:" + intent + " received. action:" + action);
+
+        boolean enabled = AlarmStorage.getState(mContext);
+        if (!enabled) {
+            Log.d(TAG, "onReceived: alarm previously disabled");
+            AlarmLog.log(TAG, "alarm disabled");
+            return;
+        }
         if (AlarmControl.INTENT_ALARM_RECEIVER.equals(action)) {
-            Log.d("##@@##" , "INTENT_ALARM_RECEIVER received");
-            handleAlarmIntent();
+            Log.d(TAG , "INTENT_ALARM_RECEIVER received");
+            AlarmLog.log(TAG, "--> start serviceIntent");
+            Intent serviceIntent = new Intent(mContext, AlarmService.class);
+            mContext.startService(serviceIntent);
         }
         else if (Intent.ACTION_TIMEZONE_CHANGED.equals(action) ||
+                Intent.ACTION_SCREEN_OFF.equals(action) ||
+                Intent.ACTION_BOOT_COMPLETED.equals(action) ||
                 Intent.ACTION_TIME_CHANGED.equals(action) ||
                 Intent.ACTION_DATE_CHANGED.equals(action)){
-            Log.d("##@@##" , "system time changed, ajust next alarm");
+            Log.d(TAG , "--> system time changed, adjust next alarm");
+            AlarmLog.log(TAG, "--> reInstallAlarm");
             reInstallAlarm();
-        }
-        else if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            Log.d("##@@##" , "ACTION_BOOT_COMPLETED received");
-            boolean enabled = AlarmStorage.getState(mContext);
-            if (enabled)
-                reInstallAlarm();
-            else
-                Log.d("##@@##", "onReceived: alarm previously disabled");
         }
     }
 
+    private void reInstallAlarm(){
+        AlarmControl.cancelAlarm(mContext);
+        AlarmControl.updateAlarm(mContext);
+    }
+
+/*
     private void handleAlarmIntent(){
         boolean halfHour;
         Calendar c = Calendar.getInstance();
@@ -67,25 +58,21 @@ public class AlarmReceiver extends BroadcastReceiver{
         Toast.makeText(mContext, df.format(cDate), Toast.LENGTH_SHORT).show();
 
         int min = c.get(Calendar.MINUTE);
-        Log.d("##@@##", "handleAlarmIntent: minute = " + min);
+        Log.d(TAG, "handleAlarmIntent: minute = " + min);
         if (min<15 || min>45)
             halfHour = false;
         else
             halfHour = true;
         sound_vibrate(); //halfHour);
         mIsHalfHour = halfHour;
-        Log.d("##@@##", "mIsHalfHour = " + mIsHalfHour);
+        Log.d(TAG, "mIsHalfHour = " + mIsHalfHour);
         reInstallAlarm();
-    }
-
-    private void reInstallAlarm(){
-        AlarmControl.cancelAlarm(mContext);
-        AlarmControl.updateAlarm(mContext);
     }
 
     MediaPlayer mMediaPlayer; //= new MediaPlayer();
     private int mPlayCnt = 0;
     private Uri mAlert;
+
     private void sound_vibrate() { //final boolean halfHour){
         //获取alarm uri
         mAlert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -98,7 +85,7 @@ public class AlarmReceiver extends BroadcastReceiver{
             //mMediaPlayer.setDataSource(mContext, music);
             final AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
-                Log.d("##@@##", "stream found");
+                Log.d(TAG, "stream found");
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 mMediaPlayer.setLooping(false);
                 mPlayCnt = 0;
@@ -109,7 +96,7 @@ public class AlarmReceiver extends BroadcastReceiver{
                 mHandler.sendMessage(message);
             }
         }catch (Exception e) {
-            Log.d("##@@##" , "Exception: "  + e.toString());
+            Log.d(TAG , "Exception: "  + e.toString());
         }
         //triggerVibrate();
     }
@@ -119,17 +106,6 @@ public class AlarmReceiver extends BroadcastReceiver{
     private static final int SOUND_DURATION = 1000; //ms
     private static final int SOUND_INTERVAL = 1500; //ms
 
-    /*
-    private void triggerVibrate() {
-        //vibrate
-        Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-        if (mIsHalfHour)
-            v.vibrate(new long[] {0,200}, -1);
-        else
-            v.vibrate(new long[] {0,200,1000,200}, -1);
-    }
-    */
-
     public Handler mHandler=new Handler()
     {
         public void handleMessage(Message msg)
@@ -138,7 +114,7 @@ public class AlarmReceiver extends BroadcastReceiver{
             {
                 case PLAY_SOUND:
                     mPlayCnt++;
-                    Log.d("##@@##", "PLAY_SOUND cnt = " + mPlayCnt);
+                    Log.d(TAG, "PLAY_SOUND cnt = " + mPlayCnt);
                     try {
                         mMediaPlayer.prepare();
                         mMediaPlayer.seekTo(0);
@@ -152,7 +128,7 @@ public class AlarmReceiver extends BroadcastReceiver{
                     break;
                 case STOP_SOUND:
                     mMediaPlayer.stop(); //stop sound
-                    Log.d("##@@##", "STOP_SOUND cnt = " + mPlayCnt);
+                    Log.d(TAG, "STOP_SOUND cnt = " + mPlayCnt);
                     if (!mIsHalfHour && mPlayCnt < 2) {
                         Message msg_start = new Message();
                         msg_start.what = PLAY_SOUND;
@@ -165,4 +141,5 @@ public class AlarmReceiver extends BroadcastReceiver{
             super.handleMessage(msg);
         }
     };
+   */
 }

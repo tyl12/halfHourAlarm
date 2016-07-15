@@ -1,4 +1,4 @@
-package com.example.administrator.myapplication;
+package com.example.administrator.alarm;
 
 import org.junit.Test;
 

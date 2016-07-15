@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.administrator.myapplication">
+    package="com.example.administrator.alarm">
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
+        android:name="com.example.administrator.alarm.AlarmApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -11,14 +12,14 @@
         android:theme="@style/AppTheme">
 
 
-        <activity android:name=".MainActivity">
+        <activity android:name="com.example.administrator.alarm.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".AlarmReceiver" ><!-- Reveiver名称，如果是内部类静态注册广播，请在内部类前加$ -->
+        <receiver android:name="com.example.administrator.alarm.AlarmReceiver" ><!-- Reveiver名称，如果是内部类静态注册广播，请在内部类前加$ -->
             <intent-filter>
                 <action android:name="android.intent.action.ALARM_RECEIVER" /><!-- 广播接收的Intent -->
                 <category android:name="android.intent.category.DEFAULT" />
@@ -39,7 +40,13 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.HOME" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SCREEN_OFF" />
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
         </receiver>
+        <service android:name="com.example.administrator.alarm.AlarmService" >
+        </service>
 
     </application>
 
