@@ -60,9 +60,9 @@ public class AlarmService extends IntentService {
             halfHour = false;
         else
             halfHour = true;
-        sound_vibrate(); //halfHour);
         mIsHalfHour = halfHour;
         Log.d(TAG, "mIsHalfHour = " + mIsHalfHour);
+        sound_vibrate(); //halfHour);
         reInstallAlarm();
     }
 
