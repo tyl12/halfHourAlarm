@@ -141,7 +141,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause E");
-        AlarmStorage.saveState(this, mToggleBtn.isEnabled());
+        AlarmStorage.saveState(this, mToggleBtn.isChecked());
         AlarmStorage.saveAllSetting(this, start_hourOfDay, start_min, stop_hourOfDay, stop_min, mCheckBtn.isChecked()?1:0);
     }
 
@@ -174,7 +174,7 @@ public class MainActivity extends Activity/*implements OnClickListener*/{
     private void updateAlarm(){
         synchronized (this) {
             //save all states first;
-            AlarmStorage.saveState(this, mToggleBtn.isEnabled());
+            AlarmStorage.saveState(this, mToggleBtn.isChecked());
             AlarmStorage.saveAllSetting(this, start_hourOfDay, start_min, stop_hourOfDay, stop_min, mCheckBtn.isChecked()?1:0);
             //alarmcontrol will read info from sharepreference directly.
             AlarmControl.cancelAlarm(this);
